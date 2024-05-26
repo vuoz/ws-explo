@@ -5,18 +5,19 @@
 
 
 
-https://github.com/zvup/ws-exploration/assets/121556153/3e8d3589-d0f4-4f00-9322-185604f78998
-
-
 ## Concept
-* Send messages/ control client via a user interface on the web
+* Send messages / control client via a user interface on the web
 
 ## Reproduce
 
 ```shell
-sh b.sh
-
+cargo leptos watch
 ```
+you will need cargo leptos  to run this project 
+```shell
+cargo install cargo-leptos
+```
+
 ## Stack
 * Rust
 * Axum
@@ -32,6 +33,7 @@ sh b.sh
 
 ### Db prerequisites
 
+Use this in your existing postgres database 
 ```sql
 CREATE table usertable(
    username text,
@@ -39,10 +41,13 @@ CREATE table usertable(
    key text,
    auth text
 );
-
-
 ```
-
-
+or just create a new database via the docker-compose file in the docker-db folder.
+[Docker DB instructions](docker-db/README.md)
+### Db Connection
+Please create a .env file and paste the following line. This is the connection string for the pg database.
+```sql 
+DATABASE_URL=postgresql://myuser:yourpass@localhost:6000/mydb
+```
 
 
