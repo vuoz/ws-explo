@@ -32,7 +32,6 @@ pub async fn new_postgres_conn(staticstate: StaticState) -> PgConn {
 pub trait DbService {
     fn state(&self) -> StaticState;
     async fn get_user(&self, user: User) -> Result<User, DbError>;
-    async fn check_key(&self, key: String) -> Result<User, DbError>;
     async fn add_user(&self, user: User) -> Result<(), DbError>;
     async fn add_user_auth(&self, user: AuthedUser) -> Result<(), DbError>;
     async fn auth_user(&self, token: String) -> Result<User, DbError>;
@@ -43,32 +42,9 @@ impl DbService for PgConn {
     fn state(&self) -> StaticState {
         self.state.clone()
     }
-    async fn check_key(&self, key: String) -> Result<User, DbError> {
-        let res = sqlx::query!("SELECT * FROM usertable WHERE key = $1", key)
-            .fetch_one(&self.conn)
-            .await?;
-        let name = match res.username {
-            Some(name) => name,
-            None => return Err(DbError::NoResult),
-        };
-        let pass = match res.password {
-            Some(pass) => pass,
-            None => return Err(DbError::NoResult),
-        };
-        let key = match res.key {
-            Some(key) => key,
-            None => return Err(DbError::NoResult),
-        };
-        let new_user = User { name, pass, key };
-        return Ok(new_user);
-    }
     async fn auth_user(&self, token: String) -> Result<User, DbError> {
         let res = sqlx::query!("SELECT * FROM usertable WHERE auth = $1", token)
-            .fetch_one(&self.conn)
-            .await?;
-        let name = match res.username {
-            Some(name) => name,
-            None => return Err(DbError::NoResult),
+            .fetch_one(&self.conn) .await?; let name = match res.username { Some(name) => name, None => return Err(DbError::NoResult),
         };
         let pass = match res.password {
             Some(pass) => pass,

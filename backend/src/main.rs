@@ -21,6 +21,7 @@ pub struct StaticState {
     pub loadjs: String,
     pub test_clients: Arc<Mutex<HashMap<String, WebSocket>>>,
     pub send_page: String,
+    pub css:String
 }
 
 #[tokio::main]
@@ -30,11 +31,14 @@ async fn main() {
     let login_page = std::fs::read_to_string("views/login.html").unwrap();
     let send_page = std::fs::read_to_string("views/send.html").unwrap();
     let loadjs = std::fs::read_to_string("target/site/pkg/ws-explo.js").unwrap();
+    let css = std::fs::read_to_string("target/site/pkg/ws-explo.css").unwrap();
 
     let test_clients_map: HashMap<String, WebSocket> = HashMap::new();
     let mutex_test_clients = Mutex::new(test_clients_map);
-    let test_clients = Arc::new(mutex_test_clients);
+    let test_clients = Arc::new(mutex_test_clients); 
+
     let state = StaticState {
+        css,
         loadjs,
         wasm,
         login_page,
@@ -45,17 +49,15 @@ async fn main() {
     let appstate = Arc::new(new_conn) as DynUserRepo;
     let router = Router::new()
         .route("/publish", post(handlers::publish::handle_publish))
+        .route("/client_active",get(handlers::client_active::handle_client_active))
         .route_layer(middleware::from_fn_with_state(appstate.clone(), auth_layer))
-        .route("/send", get(handlers::send::handle_send))
-        .route("/", get(handlers::root::handle_root))
         .route("/main.wasm", get(handlers::wasm::handle_wasm))
-        .route("/login", get(handlers::login::handle_login_get))
         .route("/login", post(handlers::login::handle_login_post))
-        .route("/account", get(handlers::account::handle_account_get))
         .route("/register", post(handlers::register::handle_register_post))
-        .route("/register", get(handlers::register::handle_register_get))
+        .route("/stylesheet.css", get(handlers::handle_ccs::handle_css))
         .route("/load.js", get(handlers::loadjs::handle_load_js))
         .route("/ws", get(handlers::ws::handle_ws))
+        .fallback(handlers::fallback::fallback)
         .with_state(appstate);
     let addr = SocketAddr::from(([127, 0, 0, 1], 5000));
     axum::Server::bind(&addr)

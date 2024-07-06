@@ -1,6 +1,5 @@
 use crate::errors::DbError;
 use axum::extract::Json;
-use axum::http::HeaderMap;
 use axum::{extract::State, http::StatusCode, response::IntoResponse};
 use serde::Deserialize;
 use serde::*;
@@ -23,11 +22,6 @@ pub struct Claims {
     pub exp: u64,
 }
 
-pub async fn handle_login_get(State(state): State<DynUserRepo>) -> impl IntoResponse {
-    let mut headers = HeaderMap::new();
-    headers.insert("Content-type", "text/html".parse().unwrap());
-    (StatusCode::OK, headers, state.state().login_page).into_response();
-}
 pub async fn handle_login_post(
     State(state): State<DynUserRepo>,
     json_body: Json<User>,

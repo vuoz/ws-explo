@@ -1,4 +1,6 @@
 use crate::calls;
+use crate::calls::client_active::ClientActive;
+use leptos_router::use_navigate;
 use leptos::component;
 use leptos::create_node_ref;
 use leptos::html::Input;
@@ -13,7 +15,6 @@ async fn send_to_server(inpt: PubInput) -> String {
         Err(e) => e.to_string(),
     }
 }
-
 #[derive(Clone)]
 struct PubInput {
     key: String,
@@ -25,17 +26,46 @@ impl PubInput {
         PubInput { key, msg, cancel }
     }
 }
+async fn get_client_active_wrapper() -> Option<ClientActive>{
+        match web_sys::window()
+            .expect("cannot get window")
+            .local_storage()
+            .expect("cannot get storage")
+            .expect("cannot get storage")
+            .get("auth")
+            .expect("cannot get")
+        {
+            Some(key) =>{
+                match calls::client_active::get_client_active(key).await{
+                Ok(v) => Some(v),
+                Err(_)=> None
+
+            }
+
+        },
+            None => { let navigate =  use_navigate(); navigate("/login",leptos_router::NavigateOptions::default() );None}
+        }
+
+}
+
 #[component]
 pub fn publish_view() -> impl IntoView {
     let action = leptos::create_action(|inpt: &PubInput| send_to_server(inpt.clone()));
     let msg_ref: NodeRef<Input> = create_node_ref();
     let (canned, setCanned) = create_signal(false);
+        
+        
+    let resource = create_resource(move || (), |_| async move{
+        get_client_active_wrapper().await
+
+    });
+   
     let on_sub = move |cancel | {
         if cancel {
             setCanned(true);
         }
         let msg = msg_ref.get().expect("cannot get value").value();
-        if msg.is_empty() {
+        if msg.is_empty() && !cancel { 
             return;
         }
         let key = match web_sys::window()
@@ -69,7 +99,7 @@ pub fn publish_view() -> impl IntoView {
                     node_ref=msg_ref
                 />
                 <button
-                    class="w-full p-2 rounded text-white hover:scale-105 font-semibold text-center align-middle  outline outline-black bg-transparent  flex items-center justify-center content-center "
+                    class="w-full p-2 rounded text-white hover:scale-105 font-semibold text-center align-middle  outline outline-zinc-400 bg-transparent  flex items-center justify-center content-center "
                     on:click=move |_| { on_sub(false) }
                 >
                     Send to client
@@ -80,6 +110,37 @@ pub fn publish_view() -> impl IntoView {
                 >
                     Cancel client connection!
                 </button>
+                <Transition fallback=move || {
+                    view! { <div></div> }
+                }>
+                    {move || match resource.get() {
+                        None => {
+                            view! { <div class="text-whitie">Error loading client status</div> }
+                                .into_view()
+                        }
+                        Some(v) => {
+                            {
+                                if let Some(v) = v {
+                                    match v.active {
+                                        true => {
+                                            view! { <div class="text-green-300">Client is active</div> }
+                                        }
+                                        false => {
+                                            view! {
+                                                <div class="text-red-400">Client is not active</div>
+                                            }
+                                        }
+                                    }
+                                        .into_view()
+                                } else {
+                                    view! {}.into_view()
+                                }
+                            }
+                                .into_view()
+                        }
+                    }}
+
+                </Transition>
                 {move || {
                     let data = action.value();
                     match data() {

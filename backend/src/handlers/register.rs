@@ -18,13 +18,6 @@ pub struct RegReturn {
     key: String,
     auth: String,
 }
-
-pub async fn handle_register_get(State(state): State<DynUserRepo>) -> impl IntoResponse {
-    let mut headers = HeaderMap::new();
-    headers.insert("content-type", "text/html".parse().unwrap());
-    (StatusCode::OK, headers, state.state().login_page).into_response()
-}
-
 pub async fn handle_register_post(
     State(state): State<DynUserRepo>,
     json_body: Json<RegUser>,

@@ -11,6 +11,14 @@ use leptos::*;
 pub fn login_view() -> impl IntoView {
     let name_ref: NodeRef<Input> = create_node_ref();
     let pass_ref: NodeRef<Input> = create_node_ref();
+
+    let window = web_sys::window().expect("cannot get window");
+    if let Ok(key) = window.local_storage().expect("").expect("").get("auth") {
+        if key.is_some(){
+            let navigate = leptos_router::use_navigate();
+            navigate("/account", leptos_router::NavigateOptions::default())
+        }
+    }
     let on_sub = move |_| {
         let name = name_ref.get().expect("cannot get value").value();
         let pass = pass_ref.get().expect("cannot get value").value();

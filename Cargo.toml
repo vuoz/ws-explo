@@ -5,7 +5,6 @@ members = [
 	"app",
 	"client"
 ]
-[workspace.dependencies]
 
 
 [[workspace.metadata.leptos]]
@@ -15,7 +14,7 @@ lib-package = "frontend"
 site-pkg-dir = "pkg"
 
 
-site-addr = "localhost:5000"
+site-addr = "0.0.0.0:5000"
 
 reload-port = 5001
 
@@ -43,6 +42,7 @@ bin-default-features = false
 # Optional. Defaults to false.
 lib-default-features = false
 
+tailwind-input-file = "style/tailwind.css"
 # The profile to use for the lib target when compiling for release
 #
 # Optional. Defaults to "release".

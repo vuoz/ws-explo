@@ -1,3 +1,5 @@
+use core::fmt;
+
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -30,16 +32,16 @@ impl From<JsValue> for FetchError {
         FetchError::JsValue(value)
     }
 }
-impl ToString for FetchError {
-    fn to_string(&self) -> String {
-        match self {
-            FetchError::JsValue(_) => String::from("Please try again!"),
-            FetchError::Error(_) => String::from("Error  unpacking data!"),
-            FetchError::SerdeError(_) => String::from("Error unpacking data!"),
-            FetchError::DynError => String::from("Error unpacking data!"),
-            FetchError::StatusError => String::from("Please try again later!"),
-            FetchError::WindowError => String::from("Please try again! "),
-            FetchError::ServerReason(v) => v.clone(),
+impl std::fmt::Display for FetchError{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self{
+            FetchError::JsValue(_) => write!(f,"Please try again!"),
+            FetchError::Error(_) => write!(f,"Error  unpacking data!"),
+            FetchError::SerdeError(_) => write!(f,"Error unpacking data!"),
+            FetchError::DynError => write!(f, "Error unpacking data!"),
+            FetchError::StatusError => write!(f,"Please try again later!"),
+            FetchError::WindowError => write!(f,"Please try again! "),
+            FetchError::ServerReason(v) => write!(f,"{}",v)
         }
     }
 }
@@ -52,7 +54,7 @@ pub struct MsgForFetch {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ErrorResp {
-    error: String,
+    pub error: String,
 }
 
 pub async fn send_add(msg: String, token: String, cancel: bool) -> Result<(), FetchError> {
