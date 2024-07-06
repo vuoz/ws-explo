@@ -154,7 +154,7 @@ pub fn publish_view() -> impl IntoView {
                             if v.is_empty() {
                                 view! {}.into_view()
                             } else {
-                                view! { <p class="text-red-900 ">{v}</p> }.into_view()
+                                view! { <p class="text-red-400 ">{v}</p> }.into_view()
                             }
                         }
                     }
