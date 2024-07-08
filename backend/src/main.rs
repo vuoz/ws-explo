@@ -83,14 +83,14 @@ async fn main() {
             let mut  clients = state.test_clients.lock().await;
             let mut clients_to_remove = Vec::new();
             for (k,v) in clients.iter(){
-                if v.time + 30000 < time_curr.as_millis(){
+                if v.time + 300000 < time_curr.as_millis(){
                     clients_to_remove.push(k.clone());
                 }
             }
             for client in clients_to_remove{
                 clients.remove(&client);
             }
-            println!("Cleared map");
+            println!("Cleaned map of clients active for longer than 5 mins");
         }
 
     });
