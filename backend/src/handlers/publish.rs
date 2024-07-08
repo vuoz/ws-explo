@@ -48,7 +48,7 @@ pub async fn handle_publish(
         }
         Ok(msg) => msg,
     };
-    match client.send(Message::Text(msg_str)).await {
+    match client.socket.send(Message::Text(msg_str)).await {
         Err(_) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,

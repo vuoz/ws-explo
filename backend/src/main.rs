@@ -13,21 +13,27 @@ use middle::auth_layer;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::Mutex;
 #[derive(Clone)]
 pub struct StaticState {
     pub wasm: Vec<u8>,
     pub login_page: String,
     pub loadjs: String,
-    pub test_clients: Arc<Mutex<HashMap<String, WebSocket>>>,
+    pub test_clients: Arc<Mutex<HashMap<String, ClientStruct>>>,
     pub send_page: String,
     pub css: String,
+}
+#[derive(Debug)]
+pub struct ClientStruct{
+    pub time: u128,
+    pub socket: WebSocket
 }
 
 #[tokio::main]
 async fn main() {
     // could be improved by just using leptos_axum and its provided functions
-    let test_clients_map: HashMap<String, WebSocket> = HashMap::new();
+    let test_clients_map: HashMap<String, ClientStruct> = HashMap::new();
     let mutex_test_clients = Mutex::new(test_clients_map);
     let test_clients = Arc::new(mutex_test_clients);
     let wasm = std::fs::read("target/site/pkg/ws-explo.wasm").unwrap();
@@ -62,7 +68,19 @@ async fn main() {
         .route("/load.js", get(handlers::loadjs::handle_load_js))
         .route("/ws", get(handlers::ws::handle_ws))
         .fallback(handlers::fallback::fallback)
-        .with_state(appstate);
+        .with_state(appstate.clone());
+
+    let state_cloned = appstate.clone();
+    tokio::spawn(async move {
+        loop{
+            tokio::time::sleep(Duration::from_secs(60)).await;
+            let state = state_cloned.state();
+            let mut clients = state.test_clients.lock().await;
+            clients.clear();
+            println!("Cleared map");
+        }
+
+    });
     let addr = SocketAddr::from(([0, 0, 0, 0], 5000));
     axum::Server::bind(&addr)
         .serve(router.into_make_service())
