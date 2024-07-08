@@ -67,7 +67,6 @@ WORKDIR /app
 COPY --from=builder /app/target/release/backend /app/
 COPY --from=builder /app/target/site /app/target/site
 COPY --from=builder /app/views /app/views
-COPY --from=planner /app/.docker.env /app/.env
 
 
 # set env vars

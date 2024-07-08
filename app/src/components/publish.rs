@@ -86,7 +86,6 @@ pub fn publish_view() -> impl IntoView {
         action.dispatch(PubInput::new(key, msg, cancel));
     };
     view! {
-        >
         <div class="w-full h-screen flex items-center content-center justify-center">
             <div class="w-[50%] outline outline-gray-900 h-[50%]  p-[10%]  space-y-4">
                 <p class="text-white font-bold text-left">Send Msg</p>

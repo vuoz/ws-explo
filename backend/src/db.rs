@@ -15,9 +15,20 @@ pub struct PgConn {
     state: StaticState,
 }
 
-pub async fn new_postgres_conn(staticstate: StaticState) -> Result<PgConn, sqlx::Error> {
-    dotenv().ok();
-    let db_url = std::env::var("DATABASE_URL").expect("cannot find db_url");
+pub async fn new_postgres_conn(staticstate: StaticState) -> Result<PgConn, anyhow::Error> {
+    let mode = std::env::var("mode")?;
+    println!("{}",mode);
+    match mode.as_str(){
+        "docker" =>{
+            dotenv::from_filename("run/secrets/db_conn").ok()
+        }
+        _=>{
+            dotenv().ok()
+        }
+
+    };
+
+    let db_url = std::env::var("DATABASE_URL")?;
     let pool = sqlx::postgres::PgPoolOptions::new()
         .max_connections(50).acquire_timeout(Duration::from_secs(5))
         .connect(&db_url)
