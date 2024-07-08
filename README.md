@@ -42,10 +42,8 @@ CREATE table usertable(
    auth text
 );
 ```
-or just create a new database via the docker-compose file in the docker-db folder.
-[Docker DB instructions](docker-db/README.md)
 ### Db Connection
-Please create a .env file and paste the following line. This is the connection string for the pg database.
+Please create a .docker.env file and paste the following line. This is the connection string for the pg database.
 ```sql 
 DATABASE_URL=postgresql://myuser:yourpass@localhost:6000/mydb
 ```
