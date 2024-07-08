@@ -7,6 +7,7 @@ use dotenv::*;
 use sqlx::*;
 use std::result::Result;
 use std::sync::Arc;
+use std::time::Duration;
 pub type DynUserRepo = Arc<dyn DbService + Send + Sync>;
 #[derive(Clone)]
 pub struct PgConn {
@@ -14,18 +15,17 @@ pub struct PgConn {
     state: StaticState,
 }
 
-pub async fn new_postgres_conn(staticstate: StaticState) -> PgConn {
+pub async fn new_postgres_conn(staticstate: StaticState) -> Result<PgConn, sqlx::Error> {
     dotenv().ok();
     let db_url = std::env::var("DATABASE_URL").expect("cannot find db_url");
     let pool = sqlx::postgres::PgPoolOptions::new()
-        .max_connections(5)
+        .max_connections(50).acquire_timeout(Duration::from_secs(5))
         .connect(&db_url)
-        .await
-        .expect("cannot connect to db");
-    PgConn {
+        .await?;
+    Ok(PgConn {
         conn: pool,
         state: staticstate,
-    }
+    })
 }
 
 #[async_trait]
@@ -44,7 +44,11 @@ impl DbService for PgConn {
     }
     async fn auth_user(&self, token: String) -> Result<User, DbError> {
         let res = sqlx::query!("SELECT * FROM usertable WHERE auth = $1", token)
-            .fetch_one(&self.conn) .await?; let name = match res.username { Some(name) => name, None => return Err(DbError::NoResult),
+            .fetch_one(&self.conn)
+            .await?;
+        let name = match res.username {
+            Some(name) => name,
+            None => return Err(DbError::NoResult),
         };
         let pass = match res.password {
             Some(pass) => pass,

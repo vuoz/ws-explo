@@ -21,22 +21,20 @@ pub struct StaticState {
     pub loadjs: String,
     pub test_clients: Arc<Mutex<HashMap<String, WebSocket>>>,
     pub send_page: String,
-    pub css:String
+    pub css: String,
 }
 
 #[tokio::main]
 async fn main() {
     // could be improved by just using leptos_axum and its provided functions
+    let test_clients_map: HashMap<String, WebSocket> = HashMap::new();
+    let mutex_test_clients = Mutex::new(test_clients_map);
+    let test_clients = Arc::new(mutex_test_clients);
     let wasm = std::fs::read("target/site/pkg/ws-explo.wasm").unwrap();
     let login_page = std::fs::read_to_string("views/login.html").unwrap();
     let send_page = std::fs::read_to_string("views/send.html").unwrap();
     let loadjs = std::fs::read_to_string("target/site/pkg/ws-explo.js").unwrap();
     let css = std::fs::read_to_string("target/site/pkg/ws-explo.css").unwrap();
-
-    let test_clients_map: HashMap<String, WebSocket> = HashMap::new();
-    let mutex_test_clients = Mutex::new(test_clients_map);
-    let test_clients = Arc::new(mutex_test_clients); 
-
     let state = StaticState {
         css,
         loadjs,
@@ -45,11 +43,17 @@ async fn main() {
         test_clients,
         send_page,
     };
-    let new_conn: db::PgConn = new_postgres_conn(state).await;
+    let new_conn: db::PgConn = match new_postgres_conn(state).await {
+        Ok(pool) => pool,
+        Err(e) => panic!("Error: {}", e),
+    };
     let appstate = Arc::new(new_conn) as DynUserRepo;
     let router = Router::new()
         .route("/publish", post(handlers::publish::handle_publish))
-        .route("/client_active",get(handlers::client_active::handle_client_active))
+        .route(
+            "/client_active",
+            get(handlers::client_active::handle_client_active),
+        )
         .route_layer(middleware::from_fn_with_state(appstate.clone(), auth_layer))
         .route("/main.wasm", get(handlers::wasm::handle_wasm))
         .route("/login", post(handlers::login::handle_login_post))
@@ -59,7 +63,7 @@ async fn main() {
         .route("/ws", get(handlers::ws::handle_ws))
         .fallback(handlers::fallback::fallback)
         .with_state(appstate);
-    let addr = SocketAddr::from(([127, 0, 0, 1], 5000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 5000));
     axum::Server::bind(&addr)
         .serve(router.into_make_service())
         .await

@@ -2,5 +2,6 @@ target
 .env
 .DS_Store
 .neoconf.json
-
+.sqlx
+.docker.env
 

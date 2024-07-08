@@ -14,5 +14,4 @@ uuid = "1.4.1"
 sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls" , "postgres" ] }
 dotenv = "0.15.0"
 jsonwebtoken = "8.3.0"
-leptos_axum = "0.5"
-leptos = "0.5"
+leptos = { version = "0.5"}
