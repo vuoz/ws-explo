@@ -89,6 +89,12 @@ pub fn publish_view() -> impl IntoView {
         <div class="w-full h-screen flex items-center content-center justify-center">
             <div class="w-[50%] outline outline-gray-900 h-[50%]  p-[10%]  space-y-4">
                 <p class="text-white font-bold text-left">Send Msg</p>
+                <p class="  font-light text-center text-gray-600">
+                    **
+                    Your cli connection will be canceled after 5 mins to avoid overcrowding the server with tcp connections
+                    **
+
+                </p>
                 <input
                     type="text"
                     class="  w-full p-2  rounded text-white font-semibold outline bg-transparent align-middle outline-gray-900"
