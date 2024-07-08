@@ -3,6 +3,7 @@ mod errors;
 mod handlers;
 mod middle;
 use axum::extract::ws::WebSocket;
+use std::time::{SystemTime, UNIX_EPOCH};
 use axum::middleware;
 use axum::routing::get;
 use axum::routing::post;
@@ -74,9 +75,21 @@ async fn main() {
     tokio::spawn(async move {
         loop{
             tokio::time::sleep(Duration::from_secs(60)).await;
+            let time_curr =  match SystemTime::now().duration_since(UNIX_EPOCH) {
+                Ok(t) => t,
+                Err(_) => return
+            };
             let state = state_cloned.state();
-            let mut clients = state.test_clients.lock().await;
-            clients.clear();
+            let mut  clients = state.test_clients.lock().await;
+            let mut clients_to_remove = Vec::new();
+            for (k,v) in clients.iter(){
+                if v.time + 60000 < time_curr.as_millis(){
+                    clients_to_remove.push(k.clone());
+                }
+            }
+            for client in clients_to_remove{
+                clients.remove(&client);
+            }
             println!("Cleared map");
         }
 
