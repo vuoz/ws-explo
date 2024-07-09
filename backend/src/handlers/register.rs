@@ -27,15 +27,14 @@ pub async fn handle_register_post(
         name: json_body.name.clone(),
         pass: json_body.pass.clone(),
         key: new_key.clone(),
+        user_id: "".to_string(),
     };
     match state.add_user(new_user).await {
         Ok(()) => (),
         Err(e) => match e {
             DbError::NoResult => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-            DbError::Error(e2) => match e2 {
-                sqlx::Error::RowNotFound => (),
-                _ => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-            },
+            DbError::Error(sqlx::Error::RowNotFound) => () ,
+            _ => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         },
     };
     let token = match jsonwebtoken::encode(
@@ -56,13 +55,10 @@ pub async fn handle_register_post(
 
     match state.add_user_auth(new_return.clone()).await {
         Ok(()) => (),
-        Err(e) => match e {
-            DbError::NoResult => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-            DbError::Error(e2) => match e2 {
-                sqlx::Error::RowNotFound => (),
-                _ => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-            },
-        },
+        Err(e) => {
+            println!("{}",e);
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response()
+}
     };
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());

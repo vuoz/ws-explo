@@ -1,8 +1,4 @@
 use crate::calls::publish::FetchError;
-use crate::calls::publish::ErrorResp;
-
-
-
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
@@ -39,9 +35,10 @@ pub async fn get_client_active( token: String) -> Result<ClientActive, FetchErro
         Err(_) => return Err(FetchError::DynError),
     };
     if resp.status() != 200 {
-        let resp_reason = JsFuture::from(resp.json()?).await?;
-        let json_reason: ErrorResp = serde_wasm_bindgen::from_value(resp_reason)?;
-        return Err(FetchError::ServerReason(json_reason.error));
+        match resp.status(){
+            403 =>  return  Err(FetchError::Forbidden),
+             _ => return Err(FetchError::StatusError),
+        }
     }
     let resp_ = JsFuture::from(resp.json()?).await?;
     let json_client_active: ClientActive = serde_wasm_bindgen::from_value(resp_ )?;

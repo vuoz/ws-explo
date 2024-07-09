@@ -5,12 +5,14 @@ use wasm_bindgen_futures::JsFuture;
 use web_sys::Response;
 use web_sys::{Request, RequestInit};
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct UserForFetch {
-    pub name: String,
-    pub pass: String,
-    pub key: String,
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct UserLoginReq{
+    pub name :String,
+    pub pass : String,
 }
+
+
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct AuthedUser {
@@ -77,17 +79,16 @@ struct Claims {
 }
 
 pub async fn send_login(name: String, pass: String) -> Result<AuthedUser, FetchError> {
-    let new_user = UserForFetch {
+    let new_user = UserLoginReq {
         name,
         pass,
-        key: "".to_string(),
     };
     let mut opts = RequestInit::new();
     let body_str = serde_json::to_string(&new_user)?;
     let body = serde_wasm_bindgen::to_value(&body_str)?;
     opts.body(Some(&body));
     opts.method("POST");
-    let url = "http://localhost:5000/login";
+    let url = "http://localhost:5000/login_post";
     let request = Request::new_with_str_and_init(url, &opts)?;
     request
         .headers()

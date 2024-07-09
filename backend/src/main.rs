@@ -63,11 +63,12 @@ async fn main() {
         )
         .route_layer(middleware::from_fn_with_state(appstate.clone(), auth_layer))
         .route("/main.wasm", get(handlers::wasm::handle_wasm))
-        .route("/login", post(handlers::login::handle_login_post))
-        .route("/register", post(handlers::register::handle_register_post))
+        .route("/login_post", post(handlers::login::handle_login_post))
+        .route("/register_post", post(handlers::register::handle_register_post))
         .route("/stylesheet.css", get(handlers::handle_ccs::handle_css))
         .route("/load.js", get(handlers::loadjs::handle_load_js))
         .route("/ws", get(handlers::ws::handle_ws))
+        .route("/check_auth",get(handlers::check_auth::handle_check_auth))
         .fallback(handlers::fallback::fallback)
         .with_state(appstate.clone());
 

@@ -15,6 +15,7 @@ pub enum FetchError {
     DynError,
     StatusError,
     WindowError,
+    Forbidden,
     ServerReason(String),
 }
 impl From<serde_wasm_bindgen::Error> for FetchError {
@@ -41,7 +42,8 @@ impl std::fmt::Display for FetchError{
             FetchError::DynError => write!(f, "Error unpacking data!"),
             FetchError::StatusError => write!(f,"Please try again later!"),
             FetchError::WindowError => write!(f,"Please try again! "),
-            FetchError::ServerReason(v) => write!(f,"{}",v)
+            FetchError::ServerReason(v) => write!(f,"{}",v),
+            FetchError::Forbidden => write!(f,"Forbidden"),
         }
     }
 }

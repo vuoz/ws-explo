@@ -49,7 +49,7 @@ pub async fn send_register(name: String, pass: String) -> Result<RegReturn, Fetc
 
     opts.body(Some(&body));
     opts.method("POST");
-    let url = "http://localhost:5000/register";
+    let url = "http://localhost:5000/register_post";
     let request = Request::new_with_str_and_init(url, &opts)?;
     request
         .headers()

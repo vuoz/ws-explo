@@ -38,7 +38,11 @@ async fn get_client_active_wrapper() -> Option<ClientActive>{
             Some(key) =>{
                 match calls::client_active::get_client_active(key).await{
                 Ok(v) => Some(v),
-                Err(_)=> None
+                Err(calls::publish::FetchError::Forbidden)=> {
+                    web_sys::window().expect("").local_storage().expect("").expect("").remove_item("auth").expect("error removing");
+                    let navigate =  use_navigate(); navigate("/login",leptos_router::NavigateOptions::default() );None
+                },
+                _ => None
 
             }
 
