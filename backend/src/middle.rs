@@ -39,7 +39,6 @@ pub async fn auth_layer<B>(
         user,
         session:header_str.to_string()
     };
-    println!("{:?}",&user_with_session);
     req.extensions_mut().insert(user_with_session);
     let response = next.run(req).await;
     Ok(response)
