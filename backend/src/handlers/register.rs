@@ -1,4 +1,3 @@
-use crate::errors::DbError;
 use crate::handlers::login::User;
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode};
@@ -7,6 +6,8 @@ use axum::Json;
 use serde::{Deserialize, Serialize};
 
 use crate::db::DynUserRepo;
+
+use super::login::AuthedUser;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RegUser {
     name: String,
@@ -29,13 +30,9 @@ pub async fn handle_register_post(
         key: new_key.clone(),
         user_id: "".to_string(),
     };
-    match state.add_user(new_user).await {
-        Ok(()) => (),
-        Err(e) => match e {
-            DbError::NoResult => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-            DbError::Error(sqlx::Error::RowNotFound) => () ,
-            _ => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-        },
+    let user = match state.add_user(new_user).await {
+        Ok(user) =>user,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
     let token = match jsonwebtoken::encode(
         &jsonwebtoken::Header::default(),
@@ -47,18 +44,16 @@ pub async fn handle_register_post(
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         Ok(token) => token,
     };
-    // need to add auth
-    let new_return = crate::handlers::login::AuthedUser {
-        key: new_key,
-        token,
-    };
 
-    match state.add_user_auth(new_return.clone()).await {
+    let token_cloned = token.clone();
+    let key_cloned = user.key.clone();
+    match state.add_user_auth(user,token).await {
         Ok(()) => (),
-        Err(e) => {
-            println!("{}",e);
-            return StatusCode::INTERNAL_SERVER_ERROR.into_response()
-}
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response()
+    };
+    let new_return = AuthedUser{
+        key:key_cloned,
+        token:token_cloned,
     };
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());

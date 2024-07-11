@@ -1,4 +1,4 @@
-use crate::handlers::login::User;
+use crate::middle::UserWithSession;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
@@ -11,7 +11,7 @@ struct ClientActive {
 }
 
 pub async fn handle_client_active(
-    Extension(user): Extension<User>,
+    Extension(user): Extension<UserWithSession>,
     State(state): State<DynUserRepo>,
 ) -> impl IntoResponse {
     if state
@@ -19,7 +19,7 @@ pub async fn handle_client_active(
         .test_clients
         .lock()
         .await
-        .contains_key(&user.key)
+        .contains_key(&user.user.key)
     {
         Json(ClientActive { active: true }).into_response()
     } else {

@@ -1,9 +1,7 @@
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-
-
-use axum::extract::Json;
 use axum::extract::State;
+use axum::extract::Json;
 use crate::db::DynUserRepo;
 
 use super::login::AuthedUser;

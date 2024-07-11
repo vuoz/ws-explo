@@ -68,7 +68,7 @@ async fn main() {
         .route("/stylesheet.css", get(handlers::handle_ccs::handle_css))
         .route("/load.js", get(handlers::loadjs::handle_load_js))
         .route("/ws", get(handlers::ws::handle_ws))
-        .route("/check_auth",get(handlers::check_auth::handle_check_auth))
+        .route("/check_auth",post(handlers::check_auth::handle_check_auth))
         .fallback(handlers::fallback::fallback)
         .with_state(appstate.clone());
 

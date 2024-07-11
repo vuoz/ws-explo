@@ -1,4 +1,5 @@
-use crate::{db::DynUserRepo, handlers::login::User};
+use crate::middle::UserWithSession;
+use crate:: db::DynUserRepo ;
 use axum::http::StatusCode;
 use axum::{
     extract::{ws::Message, State},
@@ -18,13 +19,13 @@ pub struct ErrorResp {
 }
 
 pub async fn handle_publish(
-    Extension(user): Extension<User>,
+    Extension(user): Extension<UserWithSession>,
     State(state): State<DynUserRepo>,
     Json(msg): Json<WebMsg>,
 ) -> impl IntoResponse {
     let appstate = state.state();
     let mut clients = appstate.test_clients.lock().await;
-    let client = match clients.get_mut(&user.key) {
+    let client = match clients.get_mut(&user.user.key) {
         Some(client) => client,
         None => {
             return (
@@ -62,7 +63,7 @@ pub async fn handle_publish(
     };
     // Option to cancel client
     if msg.close {
-        clients.remove(&user.key);
+        clients.remove(&user.user.key);
     }
 
     StatusCode::OK.into_response()

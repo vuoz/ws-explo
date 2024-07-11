@@ -1,11 +1,44 @@
 use leptos::component;
+use leptos_router::use_navigate;
 use leptos::view;
 use leptos::IntoView;
 use leptos::*;
+
+use crate::calls;
+
+async fn get_check_auth_wrapper()-> Option<()>{
+    match web_sys::window().expect("").local_storage().expect("").expect("").get_item("auth").expect("cannot get from local_storage"){
+       Some(token) =>{
+
+            match calls::check_auth::check_auth(token).await{
+                Ok(_)=> Some(()),
+                Err(calls::login::FetchError::TokenError) => {
+                    web_sys::window().expect("").local_storage().expect("").expect("").remove_item("auth").expect("error removing");
+                    let navigate =  use_navigate(); navigate("/login",leptos_router::NavigateOptions::default() );
+                    None
+                },
+                _ => None
+            }
+
+       }
+       None=>{
+          let navigate =  use_navigate();
+          navigate("/login",leptos_router::NavigateOptions::default() );
+          None
+       }
+
+    }
+
+
+
+}
+
 #[component]
 pub fn account() -> impl IntoView {
     let storage = web_sys::window().unwrap().local_storage().unwrap().unwrap();
-
+   let resource = create_resource(move || (), |_| async move{
+        get_check_auth_wrapper().await
+    });
     let key = match storage.get("cli_key") {
         Ok(key) => match key {
             None => {
@@ -55,6 +88,15 @@ pub fn account() -> impl IntoView {
                         Go to Send!
                     </button>
                     <p class="text-left text-green-400 text-sm">Your key will be copied.</p>
+                    <Transition fallback=move || {
+                        view! {}.into_view()
+                    }>
+                        {move || match resource.get() {
+                            None => view! {}.into_view(),
+                            Some(_) => view! {}.into_view(),
+                        }}
+
+                    </Transition>
 
                 </div>
 

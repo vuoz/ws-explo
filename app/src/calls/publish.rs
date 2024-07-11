@@ -1,5 +1,4 @@
 use core::fmt;
-
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
