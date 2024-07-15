@@ -5,6 +5,7 @@ members = [
 	"app",
 	"client"
 ]
+resolver = "2"
 
 
 [[workspace.metadata.leptos]]

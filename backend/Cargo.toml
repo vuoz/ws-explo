@@ -10,7 +10,7 @@ axum = {version = "0.6.20",features=["ws","headers"]}
 serde = "1.0.188"
 serde_json = "1.0.105"
 tokio = {version ="1.32.0", features=["full"]}
-uuid = "1.4.1"
+uuid =  {version = "1.4.1", features = ["v4"]}
 sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls" , "postgres" ] }
 dotenv = "0.15.0"
 jsonwebtoken = "8.3.0"
