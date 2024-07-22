@@ -9,6 +9,7 @@
 # https://github.com/docker/awesome-compose
 services:
   server:
+    image: zvup/test-repo:ws-explo-latest
     environment:
        mode: docker
     build:
