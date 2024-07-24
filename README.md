@@ -4,6 +4,10 @@
 # Preview
 
 
+https://github.com/user-attachments/assets/dcee4c2a-64c8-4a05-8620-2f9ddebe53aa
+
+
+
 
 ## Concept
 * Send messages / control client via a user interface on the web
