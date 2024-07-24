@@ -63,7 +63,18 @@ pub async fn handle_publish(
     };
     // Option to cancel client
     if msg.close {
-        clients.remove(&user.user.key);
+        if client.socket.send(Message::Close(None)).await.is_err(){
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResp {
+                    error: String::from("Error cosing client connectoin"),
+                }),
+            )
+                .into_response()
+            
+        }else{
+            clients.remove(&user.user.key);
+        }
     }
 
     StatusCode::OK.into_response()
